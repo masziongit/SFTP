@@ -20,6 +20,19 @@ sftp.ls.path=*CRE*
 log.config.file=log4j.properties
 ```
 
+Build jar command
+---------------
+*Please install gradle download from https://gradle.org/
+
+Shell
+```sh
+./gradlew clean build
+```
+CMD
+```sh
+gradlew.bat clean build
+```
+
 Usage command
 ---------------
 ```sh
