@@ -6,16 +6,21 @@ Configuration
 #SFTP server
 sftp.host=192.168.99.100
 sftp.port=2222
-
 sftp.user=foo
 #sftp.pass=pass
-sftp.src.path=/upload/
-sftp.dest.path=D:\\Users\\
 sftp.ssh.keyfile=nopp
 sftp.ssh.passphrase=
-sftp.delete.file=true
-sftp.ls.path=*CRE*
 
+#Must have / in last char
+sftp.src.path=/upload/
+sftp.dest.path=D:\\Users\\
+
+sftp.ls.path=*
+sftp.recursive.download.file=false
+
+#Don't have / in last char
+sftp.backup.path=/upload/back_up_
+sftp.backup.dateformat=yyyyMMdd
 #Log4j
 log.config.file=log4j.properties
 ```
