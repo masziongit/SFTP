@@ -65,7 +65,7 @@ public class FileSFTP {
 
         list.stream().filter(v->!v.getAttrs().isDir()).forEach(v->{
             String fileName = prop.getProperty("sftp.dest.path")+v.getFilename();
-                logger.debug(v.getFilename());
+//                logger.debug(v.getFilename());
                 try {
                     sftpChannel.get(v.getFilename(),fileName);
 //                if (Boolean.parseBoolean(prop.getProperty("sftp.delete.file"))){
