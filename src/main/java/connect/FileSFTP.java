@@ -9,6 +9,7 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Properties;
 import java.util.Vector;
+import java.util.stream.Collectors;
 
 /**
  * @author javagists.com
@@ -62,9 +63,8 @@ public class FileSFTP {
 
         Vector<ChannelSftp.LsEntry> list = sftpChannel.ls(prop.getProperty("sftp.ls.path"));
 
-        list.forEach(v->{
+        list.stream().filter(v->!v.getAttrs().isDir()).forEach(v->{
             String fileName = prop.getProperty("sftp.dest.path")+v.getFilename();
-            if (!v.getAttrs().isDir()){
                 logger.debug(v.getFilename());
                 try {
                     sftpChannel.get(v.getFilename(),fileName);
@@ -75,11 +75,12 @@ public class FileSFTP {
                 } catch (SftpException e) {
                     logger.error(e);
                 }
-            }
-
         });
+        Vector<ChannelSftp.LsEntry> numlist = sftpChannel.ls(prop.getProperty("sftp.ls.path"));
 
-        if (sftpChannel.ls(prop.getProperty("sftp.ls.path")).size()<= 0){
+        int size = numlist.stream().filter(v->!v.getAttrs().isDir()).collect(Collectors.toList()).size();
+
+        if (size <= 0){
             logger.info("File ls "+prop.getProperty("sftp.ls.path")+" in folder is empty");
             return;
         }else {
