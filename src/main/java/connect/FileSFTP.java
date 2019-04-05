@@ -19,8 +19,8 @@ public class FileSFTP {
 
     public FileSFTP(Properties prop) throws InterruptedException {
 
-        SimpleDateFormat dateFormat = new SimpleDateFormat(prop.getProperty("sftp.backup.dateformat"));
-        String dateStr = dateFormat.format(new Date());
+//        SimpleDateFormat dateFormat = new SimpleDateFormat(prop.getProperty("sftp.backup.dateformat"));
+//        String dateStr = dateFormat.format(new Date());
 
         Session session = null;
         try {
