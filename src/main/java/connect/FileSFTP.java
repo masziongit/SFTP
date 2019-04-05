@@ -4,7 +4,6 @@ import com.jcraft.jsch.*;
 import org.apache.log4j.Logger;
 import util.Constant;
 
-import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Properties;
@@ -18,7 +17,7 @@ public class FileSFTP {
 
     final static org.apache.log4j.Logger logger = Logger.getLogger(FileSFTP.class);
 
-    public FileSFTP(Properties prop) {
+    public FileSFTP(Properties prop) throws InterruptedException {
 
         SimpleDateFormat dateFormat = new SimpleDateFormat(prop.getProperty("sftp.backup.dateformat"));
         String dateStr = dateFormat.format(new Date());
@@ -30,16 +29,39 @@ public class FileSFTP {
             ChannelSftp sftpChannel = getChanel(session);
             logger.info("Download file..");
             sftpChannel.cd(prop.getProperty("sftp.src.path"));
-            String backUpPath = prop.getProperty("sftp.backup.path")+dateStr;
+            String backUpPath = prop.getProperty("sftp.backup.path") + dateStr;
             try {
                 sftpChannel.mkdir(backUpPath);
-            }catch (Exception e){
+            } catch (Exception e) {
                 logger.error("Path is exist");
             }
 
-            logger.debug("From : "+sftpChannel.pwd());
-            logger.debug("To : "+prop.getProperty("sftp.dest.path"));
-            recursiveDL(prop,sftpChannel,backUpPath);
+            logger.debug("From : " + sftpChannel.pwd());
+            logger.debug("To : " + prop.getProperty("sftp.dest.path"));
+            //
+            Vector<ChannelSftp.LsEntry> list = sftpChannel.ls(prop.getProperty("sftp.ls.path"));
+
+            list.stream().filter(v -> !v.getAttrs().isDir()).forEach(v -> {
+                String fileName = prop.getProperty("sftp.dest.path") + v.getFilename();
+//                logger.debug(v.getFilename());
+                try {
+                    sftpChannel.get(v.getFilename(), fileName);
+//                if (Boolean.parseBoolean(prop.getProperty("sftp.delete.file"))){
+                    sftpChannel.rename(v.getFilename(), backUpPath + "/" + v.getFilename());
+                    logger.info("Success Download backup file : " + backUpPath + "/" + v.getFilename());
+//                }
+                } catch (SftpException e) {
+                    logger.error(e);
+                }
+            });
+            Vector<ChannelSftp.LsEntry> numlist = sftpChannel.ls(prop.getProperty("sftp.ls.path"));
+
+            int size = numlist.stream().filter(v -> !v.getAttrs().isDir()).collect(Collectors.toList()).size();
+
+            if (size <= 0) {
+                logger.info("File ls " + prop.getProperty("sftp.ls.path") + " in folder is empty");
+            }
+
             logger.info("Download file complete!!");
             sftpChannel.exit();
 
@@ -49,47 +71,20 @@ public class FileSFTP {
         } catch (SftpException e) {
             e.printStackTrace();
             logger.error(e);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
         } finally {
             logger.info("Disconnect from SFTP");
             logger.debug(session.getHost());
             session.disconnect();
         }
 
-    }
-
-    private void recursiveDL(Properties prop, ChannelSftp sftpChannel, String backUpPath) throws SftpException, InterruptedException {
-
-        Vector<ChannelSftp.LsEntry> list = sftpChannel.ls(prop.getProperty("sftp.ls.path"));
-
-        list.stream().filter(v->!v.getAttrs().isDir()).forEach(v->{
-            String fileName = prop.getProperty("sftp.dest.path")+v.getFilename();
-//                logger.debug(v.getFilename());
-                try {
-                    sftpChannel.get(v.getFilename(),fileName);
-//                if (Boolean.parseBoolean(prop.getProperty("sftp.delete.file"))){
-                    sftpChannel.rename(v.getFilename(),backUpPath+"/"+v.getFilename());
-                    logger.info("Success Download backup file : "+backUpPath+"/"+v.getFilename());
-//                }
-                } catch (SftpException e) {
-                    logger.error(e);
-                }
-        });
-        Vector<ChannelSftp.LsEntry> numlist = sftpChannel.ls(prop.getProperty("sftp.ls.path"));
-
-        int size = numlist.stream().filter(v->!v.getAttrs().isDir()).collect(Collectors.toList()).size();
-
-        if (size <= 0){
-            logger.info("File ls "+prop.getProperty("sftp.ls.path")+" in folder is empty");
-            return;
-        }else {
-            if (Boolean.parseBoolean(prop.getProperty("sftp.recursive.download.file"))) {
-                Thread.sleep(1000);
-                recursiveDL(prop, sftpChannel, backUpPath);
-            }
+        if (Boolean.parseBoolean(prop.getProperty("sftp.recursive.download.file"))) {
+            logger.debug("Reconnecting SFTP "+prop.getProperty("thread.sleep"));
+            Thread.sleep(Integer.parseInt(prop.getProperty("thread.sleep")));
+            new FileSFTP(prop);
         }
+
     }
+
 
     private Session getSession(Properties prop) throws JSchException {
 
