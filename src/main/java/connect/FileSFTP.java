@@ -29,12 +29,13 @@ public class FileSFTP {
             ChannelSftp sftpChannel = getChanel(session);
             logger.info("Download file..");
             sftpChannel.cd(prop.getProperty("sftp.src.path"));
-            String backUpPath = prop.getProperty("sftp.backup.path") + dateStr;
-            try {
-                sftpChannel.mkdir(backUpPath);
-            } catch (Exception e) {
-                logger.error("Path is exist");
-            }
+            String backUpPath = prop.getProperty("sftp.backup.path");
+
+//            try {
+//                sftpChannel.mkdir(backUpPath);
+//            } catch (Exception e) {
+//                logger.info("Path  is exist");
+//            }
 
             logger.debug("From : " + sftpChannel.pwd());
             logger.debug("To : " + prop.getProperty("sftp.dest.path"));
@@ -47,11 +48,11 @@ public class FileSFTP {
                 try {
                     sftpChannel.get(v.getFilename(), fileName);
 //                if (Boolean.parseBoolean(prop.getProperty("sftp.delete.file"))){
-                    sftpChannel.rename(v.getFilename(), backUpPath + "/" + v.getFilename());
-                    logger.info("Success Download backup file : " + backUpPath + "/" + v.getFilename());
+                    sftpChannel.rename(v.getFilename(), backUpPath +v.getFilename());
+                    logger.info("Success Download backup file : " + backUpPath + v.getFilename());
 //                }
                 } catch (SftpException e) {
-                    logger.error(e);
+                    logger.info(e +" : "+ backUpPath + v.getFilename());
                 }
             });
             Vector<ChannelSftp.LsEntry> numlist = sftpChannel.ls(prop.getProperty("sftp.ls.path"));
