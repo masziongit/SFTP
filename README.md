@@ -21,6 +21,9 @@ sftp.recursive.download.file=false
 #Don't have / in last char
 sftp.backup.path=/upload/back_up_
 sftp.backup.dateformat=yyyyMMdd
+
+thread.sleep=10000
+
 #Log4j
 log.config.file=log4j.properties
 ```
