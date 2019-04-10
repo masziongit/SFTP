@@ -22,7 +22,9 @@ sftp.recursive.download.file=false
 sftp.backup.path=/upload/back_up_
 sftp.backup.dateformat=yyyyMMdd
 
-thread.sleep=10000
+#App
+thread.sleep=1000
+file.name.dateformat=_yyyymmddhhmmss
 
 #Log4j
 log.config.file=log4j.properties

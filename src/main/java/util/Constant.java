@@ -14,6 +14,7 @@ public final class Constant {
 
     public final class Regex{
         public static final String ARRAY = ",";
+        public static final String DOT = "\\.";
     }
 
 }

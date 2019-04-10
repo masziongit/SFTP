@@ -4,6 +4,7 @@ import com.jcraft.jsch.*;
 import org.apache.log4j.Logger;
 import util.Constant;
 
+import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Properties;
@@ -19,8 +20,8 @@ public class FileSFTP {
 
     public FileSFTP(Properties prop) throws InterruptedException {
 
-//        SimpleDateFormat dateFormat = new SimpleDateFormat(prop.getProperty("sftp.backup.dateformat"));
-//        String dateStr = dateFormat.format(new Date());
+        DateFormat dateFormat = new SimpleDateFormat(prop.getProperty("file.name.dateformat"));
+        String dateStr = dateFormat.format(new Date());
 
         Session session = null;
         try {
@@ -47,12 +48,15 @@ public class FileSFTP {
 //                logger.debug(v.getFilename());
                 try {
                     sftpChannel.get(v.getFilename(), fileName);
+                    v.getAttrs();
 //                if (Boolean.parseBoolean(prop.getProperty("sftp.delete.file"))){
-                    sftpChannel.rename(v.getFilename(), backUpPath +v.getFilename());
-                    logger.info("Success Download backup file : " + backUpPath + v.getFilename());
+                    String[] nt = v.getFilename().split(Constant.Regex.DOT);
+                    String fileRename = backUpPath+nt[0]+dateStr+"."+nt[1];
+                    sftpChannel.rename(v.getFilename(), fileRename);
+                    logger.info("Success Download, backup file  : " + fileRename);
 //                }
-                } catch (SftpException e) {
-                    logger.info(e +" : "+ backUpPath + v.getFilename());
+                } catch (Exception e) {
+                    logger.error("Error Filename "+v.getFilename() +" : "+ e);
                 }
             });
             Vector<ChannelSftp.LsEntry> numlist = sftpChannel.ls(prop.getProperty("sftp.ls.path"));
